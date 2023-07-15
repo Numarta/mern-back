@@ -3,13 +3,27 @@ import multer from 'multer';
 
 import mongoose from 'mongoose';
 import checkAuth from './middlevares/checkAuth.js';
-import { register, login, me } from './controllers/UserController.js';
+import handleValidationErrors from './middlevares/handleValidationErrors.js';
+
+import {
+  createPost,
+  getAllPosts,
+  getOnePost,
+  removePost,
+  updatePost,
+} from './controllers/PostController.js';
+
+import {
+  registerUser,
+  loginUser,
+  infoUser,
+} from './controllers/UserController.js';
+
 import {
   registerValidation,
   loginValidation,
   postCreateValidation,
 } from './validation/validate.js';
-import { create, getAll, getOne, remove, update } from './controllers/PostController.js';
 
 mongoose
   .connect('mongodb://localhost:27017/merndb')
@@ -22,19 +36,47 @@ const storage = multer.diskStorage({
   destination: (_, __, cb) => {
     cb(null, 'uploads');
   },
+  filename: (_, file, cb) => {
+    cb(null, file.originalname);
+  },
 });
 
+const upload = multer({ storage });
+
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 
-app.get('/auth/me', checkAuth, me);
-app.post('/auth/register', registerValidation, register);
-app.get('/auth/login', loginValidation, login);
+app.get('/auth/me', checkAuth, infoUser);
 
-app.get('/posts', getAll);
-app.get('/posts/:id', getOne);
-app.post('/posts', checkAuth, postCreateValidation, create);
-app.delete('/posts/:id', checkAuth, remove);
-app.patch('/posts/:id', checkAuth, update);
+app.post(
+  '/auth/register',
+  registerValidation,
+  handleValidationErrors,
+  registerUser,
+);
+app.post('/auth/login', loginValidation, handleValidationErrors, loginUser);
+
+app.post('/upload', checkAuth, upload.single('image'), (req, res) =>
+  res.json({ success: true, url: `/uploads/${req.file.originalname}` }),
+);
+
+app.get('/posts', getAllPosts);
+app.get('/posts/:id', getOnePost);
+app.post(
+  '/posts',
+  checkAuth,
+  postCreateValidation,
+  handleValidationErrors,
+  createPost,
+);
+app.delete('/posts/:id', checkAuth, removePost);
+app.patch(
+  '/posts/:id',
+  checkAuth,
+  postCreateValidation,
+  handleValidationErrors,
+  updatePost,
+);
 
 app.listen(4444, (err) => {
   if (err) {

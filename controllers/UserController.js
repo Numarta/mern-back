@@ -1,17 +1,11 @@
 import bcrypt from 'bcrypt';
 
-import { validationResult } from 'express-validator';
 import User from '../models/User.js';
 
 import jwt from 'jsonwebtoken';
 
-export const register = async (req, res) => {
+export const registerUser = async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json(errors);
-    }
-
     const password = await req.body.password;
     const passwordHashed = await bcrypt.hash(password, 10);
     const createdUser = await User.create({
@@ -29,7 +23,7 @@ export const register = async (req, res) => {
   }
 };
 
-export const login = async (req, res) => {
+export const loginUser = async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
 
@@ -37,7 +31,10 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: 'Неверный email' });
     }
 
-    const isValidPass = await bcrypt.compare(req.body.password, user._doc.passwordHash);
+    const isValidPass = await bcrypt.compare(
+      req.body.password,
+      user._doc.passwordHash,
+    );
 
     if (!isValidPass) {
       return res.status(401).json({ message: 'Неверный пароль' });
@@ -59,7 +56,7 @@ export const login = async (req, res) => {
   }
 };
 
-export const me = async (req, res) => {
+export const infoUser = async (req, res) => {
   try {
     console.log(req.userId);
     const user = await User.findById(req.userId);

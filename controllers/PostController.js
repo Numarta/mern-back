@@ -1,7 +1,7 @@
 //postCreateValidation
 import Post from '../models/Post.js';
 
-export const create = async (req, res) => {
+export const createPost = async (req, res) => {
   try {
     const doc = new Post({
       title: req.body.title,
@@ -18,7 +18,7 @@ export const create = async (req, res) => {
   }
 };
 
-export const getAll = async (req, res) => {
+export const getAllPosts = async (req, res) => {
   try {
     const posts = await Post.find({}).populate('user').exec();
     res.json(posts);
@@ -27,7 +27,7 @@ export const getAll = async (req, res) => {
   }
 };
 
-export const getOne = async (req, res) => {
+export const getOnePost = async (req, res) => {
   try {
     const id = req.params.id;
     // const post = await Post.findOne({ _id: id }).populate('user').exec();
@@ -51,7 +51,7 @@ export const getOne = async (req, res) => {
   }
 };
 
-export const update = async (req, res) => {
+export const updatePost = async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -72,11 +72,11 @@ export const update = async (req, res) => {
     }
     res.json({ post, success: true });
   } catch (err) {
-    return res.json({ message: `Не удалось получить 1 пост, ${err}` });
+    return res.json({ message: `Не удалось изменить 1 пост, ${err}` });
   }
 };
 
-export const remove = async (req, res) => {
+export const removePost = async (req, res) => {
   try {
     const id = req.params.id;
     const post = await Post.findOneAndDelete(
